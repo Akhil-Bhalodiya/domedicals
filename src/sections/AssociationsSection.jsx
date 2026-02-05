@@ -7,27 +7,27 @@ const AssociationsSection = () => {
   const associations = [
     {
       name: "biotech",
-      image: "/logos/biotech.png",
+      image: "/images/biotech.png",
       imageClass: "h-24",
     },
     {
       name: "Rayner",
-      image: "/logos/rayner.png",
+      image: "/images/rayner.png",
       imageClass: "h-24",
     },
     {
       name: "HASA OPTIX",
-      image: "/logos/hasa.png",
+      image: "/images/hasa.png",
       imageClass: "h-24",
     },
     {
       name: "allotex",
-      image: "/logos/allotex.png",
+      image: "/images/allotex.png",
       imageClass: "h-24",
     },
     {
       name: "EMTRON",
-      image: "/logos/emtron.png",
+      image: "/images/emtron.png",
       imageClass: "h-24",
     },
   ];
