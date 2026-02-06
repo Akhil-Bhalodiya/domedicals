@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Target,
   Users,
@@ -15,10 +15,16 @@ import {
   Compass,
   Zap,
   TrendingUp,
+  Play,
+  ExternalLink,
 } from "lucide-react";
+
+import { Link } from "react-router-dom";
 
 const OurPurpose = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentPurposeSlide, setCurrentPurposeSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   // COMPLETELY NEW SLIDER IMAGES
   const heroSlides = [
@@ -41,7 +47,8 @@ const OurPurpose = () => {
       subtitle: "Collaborating with Ophthalmologists Worldwide",
     },
     {
-      image:"https://images.pexels.com/photos/6129207/pexels-photo-6129207.jpeg",
+      image:
+        "https://images.pexels.com/photos/6129207/pexels-photo-6129207.jpeg",
       title: "Patient Outcomes",
       subtitle: "Quality of Vision, Quality of Life",
     },
@@ -97,6 +104,19 @@ const OurPurpose = () => {
     setCurrentSlide((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1));
   };
 
+  const nextPurposeSlide = () => {
+    setCurrentPurposeSlide((prev) =>
+      prev === purposePoints.length - 1 ? 0 : prev + 1,
+    );
+  };
+
+  const prevPurposeSlide = () => {
+    setCurrentPurposeSlide((prev) =>
+      prev === 0 ? purposePoints.length - 1 : prev - 1,
+    );
+  };
+
+  // Main hero slider
   useEffect(() => {
     const interval = setInterval(() => {
       nextSlide();
@@ -104,9 +124,38 @@ const OurPurpose = () => {
     return () => clearInterval(interval);
   }, [currentSlide]);
 
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640); // sm breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Purpose points auto slide for mobile (2 seconds)
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const interval = setInterval(() => {
+      nextPurposeSlide();
+    }, 2000); // 2 second rotation
+
+    return () => clearInterval(interval);
+  }, [isMobile, purposePoints.length]);
+
+  const iframeRef = useRef(null);
+
+  const handleContainerClick = () => {
+    // Open YouTube in a new tab when the video container is clicked
+    window.open("https://www.youtube.com/watch?v=69apY2LYMZ8", "_blank");
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Hero Slider Section - 800px height */}
+      {/* Hero Slider Section - 800px height - UNCHANGED */}
       <section className="relative h-[800px] overflow-hidden">
         {heroSlides.map((slide, index) => (
           <div
@@ -182,20 +231,19 @@ const OurPurpose = () => {
         </div>
       </section>
 
-      {/* Main Purpose Section */}
+      {/* Main Purpose Section - FIXED LAYOUT */}
       <section className="py-16 bg-white">
-        <div className="w-[90%]  mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            <div>
-              <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-secondary-400 rounded-xl flex items-center justify-center mr-4">
-                  <Eye className="w-6 h-6 text-white" />
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900">
-                  Our Purpose
-                </h2>
+        <div className="w-[90%] mx-auto">
+          {/* Our Purpose Text Content - Full width */}
+          <div className="mb-12">
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-secondary-400 rounded-xl flex items-center justify-center mr-4">
+                <Eye className="w-6 h-6 text-white" />
               </div>
-              <div className="space-y-6">
+              <h2 className="text-3xl font-bold text-gray-900">Our Purpose</h2>
+            </div>
+            <div className="md:flex sm:gap-6  md:gap-6">
+              <div className="space-y-6  md:w-[60%]">
                 <p className="text-gray-700 text-lg">
                   Our purpose is to support ophthalmologists across{" "}
                   <strong className="text-primary-600">
@@ -227,42 +275,152 @@ const OurPurpose = () => {
                   across a wide range of patient profiles.
                 </p>
               </div>
+              <div className="space-y-6  md:w-[40%]">
+                <div
+                  className="relative aspect-video rounded-lg overflow-hidden shadow-lg group cursor-pointer"
+                  onClick={handleContainerClick}
+                  title="Click to watch on YouTube"
+                >
+                  {/* YouTube iframe with autoplay (muted) */}
+                  <iframe
+                    ref={iframeRef}
+                    src="https://www.youtube.com/embed/69apY2LYMZ8?autoplay=1&mute=1&rel=0&modestbranding=1&controls=1&loop=0&playlist=69apY2LYMZ8"
+                    title="Domedicals Introduction"
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    frameBorder="0"
+                  />
+
+                  {/* Overlay with play button and YouTube indicator */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                      <Play className="w-8 h-8 text-primary-600 ml-1" />
+                    </div>
+                    <div className="bg-black/70 text-white text-sm font-medium px-4 py-2 rounded-full flex items-center">
+                      <span>Watch on YouTube</span>
+                      <ExternalLink className="w-4 h-4 ml-2" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Purpose Points Grid - SEPARATE SECTION */}
+          <div>
+            {/* Mobile Slider for Purpose Points */}
+            <div className="sm:hidden relative mb-8">
+              <div className="overflow-hidden">
+                <div
+                  className="flex transition-transform duration-500 ease-in-out"
+                  style={{
+                    transform: `translateX(-${currentPurposeSlide * 100}%)`,
+                  }}
+                >
+                  {purposePoints.map((point, index) => (
+                    <div key={index} className="w-full flex-shrink-0 px-3">
+                      <div className="bg-white border border-gray-200 rounded-xl p-6 hover:border-primary-200 hover:shadow-md transition-all duration-300 h-full">
+                        {/* Mobile: Flex layout, icon left, text right */}
+                        <div className="flex items-start gap-4">
+                          <div
+                            className={`w-12 h-12 bg-gradient-to-r ${point.color} rounded-lg flex items-center justify-center flex-shrink-0`}
+                          >
+                            <point.icon className="w-6 h-6 text-white" />
+                          </div>
+
+                          <div>
+                            <h3 className="font-bold text-gray-900 text-lg mb-1">
+                              {point.title}
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                              {point.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile Slider Controls */}
+              {/* <button
+                onClick={prevPurposeSlide}
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-colors"
+                aria-label="Previous point"
+              >
+                <ChevronLeft className="w-4 h-4 text-gray-700" />
+              </button>
+              <button
+                onClick={nextPurposeSlide}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-colors"
+                aria-label="Next point"
+              >
+                <ChevronRightIcon className="w-4 h-4 text-gray-700" />
+              </button> */}
+
+              {/* Mobile Slider Indicators */}
+              <div className="flex justify-center mt-6 space-x-2">
+                {purposePoints.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentPurposeSlide(index)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === currentPurposeSlide
+                        ? "bg-primary-600 w-6"
+                        : "bg-gray-300"
+                    }`}
+                    aria-label={`Go to point ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
 
-            {/* Purpose Points Grid */}
-        <div className="grid sm:grid-cols-2 gap-6">
-  {purposePoints.map((point, index) => (
-    <div
-      key={index}
-      className="bg-white border border-gray-200 rounded-xl p-6 hover:border-primary-200 hover:shadow-md transition-all duration-300"
-    >
-      {/* Mobile: Flex layout, Desktop: Keep original block layout */}
-      <div className="flex sm:block items-start gap-4">
-        {/* Icon - same styling, just flex-shrink-0 for mobile */}
-        <div
-          className={`w-12 h-12 bg-gradient-to-r ${point.color} rounded-lg flex items-center justify-center flex-shrink-0 sm:mb-4`}
-        >
-          <point.icon className="w-6 h-6 text-white" />
-        </div>
-        
-        {/* Text content - same styling, no changes for desktop */}
-        <div>
-          <h3 className="font-bold text-gray-900 text-lg mb-2">
-            {point.title}
-          </h3>
-          <p className="text-gray-600 text-sm">
-            {point.description}
-          </p>
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
+            {/* Desktop Grid - EXACTLY SAME AS BEFORE */}
+            <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {purposePoints.map((point, index) => (
+                <div
+                  key={index}
+                  className="bg-white border border-gray-200 rounded-xl p-6 hover:border-primary-200 hover:shadow-md transition-all duration-300"
+                >
+                  {/* Mobile: Flex layout, Desktop: Keep original block layout */}
+                  <div className="flex sm:block items-start gap-4">
+                    {/* Icon - same styling, just flex-shrink-0 for mobile */}
+                    <div
+                      className={`w-12 h-12 bg-gradient-to-r ${point.color} rounded-lg flex items-center justify-center flex-shrink-0 sm:mb-4`}
+                    >
+                      <point.icon className="w-6 h-6 text-white" />
+                    </div>
+
+                    {/* Text content - same styling, no changes for desktop */}
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-lg mb-2">
+                        {point.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm">
+                        {point.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile auto-rotation indicator */}
+            {/* <div className="sm:hidden text-center mt-6">
+              <div className="inline-flex items-center bg-white rounded-full px-4 py-2 shadow-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                <span className="text-xs text-gray-600 font-medium">
+                  Auto-rotating every 2 seconds
+                </span>
+              </div>
+            </div> */}
           </div>
         </div>
       </section>
 
-      {/* Role in Advancing Eye Care */}
+      {/* Role in Advancing Eye Care - UNCHANGED */}
       <section className="py-16 bg-gray-50">
         <div className="w-[90%] mx-auto">
           <div className="text-center mb-12">
@@ -296,12 +454,12 @@ const OurPurpose = () => {
         </div>
       </section>
 
-      {/* Vision Section - Image Right, Text Left */}
+      {/* Vision Section - UPDATED FOR MOBILE (Content first, then image) */}
       <section className="py-16 bg-white">
         <div className="w-[90%] max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Text Content - Left */}
-            <div>
+            {/* Text Content - Left on desktop, First on mobile */}
+            <div className="order-1 lg:order-1">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-secondary-400 rounded-xl flex items-center justify-center mr-4">
                   <Target className="w-6 h-6 text-white" />
@@ -336,8 +494,8 @@ const OurPurpose = () => {
               </div>
             </div>
 
-            {/* NEW Vision Image - Right */}
-            <div className="relative">
+            {/* NEW Vision Image - Right on desktop, Second on mobile */}
+            <div className="relative order-2 lg:order-2">
               <div className="relative rounded-2xl overflow-hidden shadow-xl">
                 <img
                   src={visionImage}
@@ -361,34 +519,12 @@ const OurPurpose = () => {
         </div>
       </section>
 
-      {/* Mission Section - Image Left, Text Right */}
+      {/* Mission Section - UPDATED FOR MOBILE (Content first, then image) */}
       <section className="py-16 bg-gray-50">
         <div className="w-[90%] max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* NEW Mission Image - Left */}
-            <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-xl">
-                <img
-                  src={missionImage}
-                  alt="Mission - Surgical Excellence"
-                  className="w-full h-[500px] object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex items-end">
-                  <div className="p-6 text-white">
-                    <div className="flex items-center mb-2">
-                      <Zap className="w-5 h-5 mr-2" />
-                      <span className="font-medium">Empowering Surgeons</span>
-                    </div>
-                    <h3 className="text-xl font-bold">
-                      Excellence in Every Procedure
-                    </h3>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Text Content - Right */}
-            <div>
+            {/* Text Content - Right on desktop, First on mobile */}
+            <div className="order-1 lg:order-2">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-secondary-400 rounded-xl flex items-center justify-center mr-4">
                   <Award className="w-6 h-6 text-white" />
@@ -424,11 +560,33 @@ const OurPurpose = () => {
                 </div>
               </div>
             </div>
+
+            {/* NEW Mission Image - Left on desktop, Second on mobile */}
+            <div className="relative order-2 lg:order-1">
+              <div className="relative rounded-2xl overflow-hidden shadow-xl">
+                <img
+                  src={missionImage}
+                  alt="Mission - Surgical Excellence"
+                  className="w-full h-[500px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex items-end">
+                  <div className="p-6 text-white">
+                    <div className="flex items-center mb-2">
+                      <Zap className="w-5 h-5 mr-2" />
+                      <span className="font-medium">Empowering Surgeons</span>
+                    </div>
+                    <h3 className="text-xl font-bold">
+                      Excellence in Every Procedure
+                    </h3>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section - UNCHANGED */}
       <section className="py-16 bg-white">
         <div className="w-[90%] max-w-7xl mx-auto">
           <div className="bg-gradient-to-br from-primary-600 to-secondary-500 rounded-2xl p-10 md:p-12 text-center">

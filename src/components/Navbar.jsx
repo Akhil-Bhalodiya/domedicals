@@ -83,7 +83,7 @@ const Navbar = () => {
                 {item.path ? (
                   <Link
                     to={item.path}
-                    className={`flex items-center px-4 py-3 text-lg font-semibold rounded-lg transition-all duration-200 ${
+                    className={`flex items-center px-4 py-3 text-md font-semibold rounded-lg transition-all duration-200 ${
                       location.pathname === item.path
                         ? 'text-primary-600 bg-primary-50'
                         : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
